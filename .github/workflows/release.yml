@@ -5,7 +5,6 @@ on:
     tags:
       - 'v*'
 
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -18,9 +17,9 @@ jobs:
         go-version: '1.21'
 
     - name: Build darwin-arm64
-      run: GOOS=darwin GOARCH=arm64 go build -v -o netfold-${{ github.ref }}-darwin-arm64 .
+      run: GOOS=darwin GOARCH=arm64 go build -v -o netfold-${{ github.ref_name }}-darwin-arm64 .
     - name: Build linux-amd64
-      run: GOOS=linux GOARCH=amd64 go build -v -o netfold-${{ github.ref }}-linux-amd64 .
+      run: GOOS=linux GOARCH=amd64 go build -v -o netfold-${{ github.ref_name }}-linux-amd64 .
 
     - name: Create Release
       id: create_release
@@ -28,10 +27,27 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       with:
-        files: |
-          netfold-${{ github.ref }}-darwin-arm64
-          netfold-${{ github.ref }}-linux-amd64
         tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
+        release_name: Release ${{ github.ref_name }}
         draft: false
         prerelease: false
+    - name: Upload Release Assets darwin-arm64
+      id: upload-release-asset-darwin-arm64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: netfold-${{ github.ref_name }}-darwin-arm64
+        asset_name: netfold-${{ github.ref_name }}-darwin-arm64
+        asset_content_type: application/octet-stream
+    - name: Upload Release Assets linux-amd64
+      id: upload-release-asset-linux-amd64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: netfold-${{ github.ref_name }}-linux-amd64
+        asset_name: netfold-${{ github.ref_name }}-linux-amd64
+        asset_content_type: application/octet-stream
