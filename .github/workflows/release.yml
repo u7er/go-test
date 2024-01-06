@@ -2,8 +2,6 @@ name: Create Release and Upload Build
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
 
@@ -28,7 +26,7 @@ jobs:
       id: create_release
       uses: actions/create-release@v1
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
       with:
         files: |
           netfold-${{ github.ref }}-darwin-arm64
