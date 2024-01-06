@@ -1,21 +1,39 @@
-name: Publish Release
+name: Create Release and Upload Build
+
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - 'v*'
+
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+
     steps:
     - uses: actions/checkout@v4
-    - name: Create a release
-      uses: action-pack/github-release@v2
+    - name: Set up Go
+      uses: actions/setup-go@v4
       with:
-        tag: MyReleaseTag
-        title: MyReleaseTitle
-        body: MyReleaseMessage
+        go-version: '1.21'
+
+    - name: Build darwin-arm64
+      run: GOOS=darwin GOARCH=arm64 go build -v -o netfold-${{ github.ref }}-darwin-arm64 .
+    - name: Build linux-amd64
+      run: GOOS=linux GOARCH=amd64 go build -v -o netfold-${{ github.ref }}-linux-amd64 .
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: |
+          netfold-${{ github.ref }}-darwin-arm64
+          netfold-${{ github.ref }}-linux-amd64
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: false
